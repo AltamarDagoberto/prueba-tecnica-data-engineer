@@ -54,6 +54,16 @@ def parse_iso(s):
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
+def clean_text(s):
+    """Postgres no acepta NUL bytes en columnas de texto. Algunos
+    issues y commits de repos grandes (vscode, etc) traen caracteres
+    de control en titulos y mensajes, los quitamos antes de insertar.
+    """
+    if s is None:
+        return None
+    return s.replace("\x00", "")
+
+
 def upsert_user_if_present(db, user_dict):
     """Si user_dict tiene datos, hace upsert y devuelve su id local.
     Si viene en blanco (a veces los issues no tienen autor), devuelve None.
@@ -82,7 +92,7 @@ def extract_issues(gh, db, repo_id, owner, name):
             repo_id,
             issue["number"],
             author_id,
-            issue["title"],
+            clean_text(issue["title"]),
             issue["state"],
             "pull_request" in issue,
             parse_iso(issue["created_at"]),
@@ -121,7 +131,7 @@ def extract_commits(gh, db, repo_id, owner, name):
             repo_id,
             author_id,
             committer_id,
-            commit_data["message"],
+            clean_text(commit_data["message"]),
             parse_iso(commit_data["author"]["date"]),
             parse_iso(commit_data["committer"]["date"]),
         ))
