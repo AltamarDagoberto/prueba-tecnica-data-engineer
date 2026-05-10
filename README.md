@@ -66,6 +66,8 @@ Editar `.env` con los valores reales (PAT de GitHub, ID de la carpeta de Drive, 
 }
 ```
 
+> El `config.json` de ejemplo apunta a `AltamarDagoberto/repo-demo-privado` que es mi repo privado de prueba. Para que funcione, toca reemplazarlo por algún repo privado propio.
+
 ### 5. Construir la imagen del extractor
 
 ```bash
