@@ -4,6 +4,8 @@ Pipeline automatizado que extrae **issues** y **commits** desde repositorios de 
 
 ## Arquitectura
 
+## Arquitectura
+
 ```mermaid
 flowchart LR
     A[Google Drive<br/>config.json] -->|1. lee config| B[Airflow DAG]
@@ -13,9 +15,9 @@ flowchart LR
     B -->|5. refresh views| E
     B -->|6. genera CSV| F[Reporte<br/>resumen.csv]
     F -->|7. sube| A
+```
 
-
-El DAG tiene **4 tareas encadenadas**, cada una corre en un contenedor de la imagen 'github-extractor:latest':
+El DAG tiene **4 tareas encadenadas**...
 
 1. **`validate_config`** — baja `config.json` de Drive y verifica que tenga repos.
 2. **`run_extractor`** — extrae issues y commits de cada repo (incremental desde la última corrida) y los carga a Postgres.
