@@ -1,14 +1,24 @@
 """Cliente para leer y escribir archivos en Google Drive.
 
-Usa una cuenta de servicio (service account). La carpeta de Drive
-tiene que estar compartida con el email de esa cuenta antes de
-correr esto.
+Soporta dos formas de autenticarse:
+
+  1. Service Account (cuenta de servicio): patron de servidor, ideal
+     para Workspace + Shared Drives. En cuentas de Gmail personal NO
+     puede crear archivos por la politica de cuotas de Google.
+
+  2. OAuth user token: la app actua en nombre del usuario que autorizo.
+     Funciona en cualquier cuenta, incluida Gmail personal.
+
+El cliente detecta automaticamente cual es por el contenido del JSON
+que recibe en credentials_path.
 """
 
 import io
 import json
 
+from google.auth.transport.requests import Request
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
@@ -17,14 +27,34 @@ from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
+def _load_credentials(credentials_path: str):
+    """Carga credenciales desde un JSON, detectando si son SA o OAuth.
+
+    - Si el JSON tiene "type": "service_account" -> Service Account.
+    - Si no, asumimos que es un token de OAuth user (refresh + access).
+      En ese caso refrescamos el access token si esta vencido.
+    """
+    with open(credentials_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if data.get("type") == "service_account":
+        return service_account.Credentials.from_service_account_file(
+            credentials_path, scopes=SCOPES
+        )
+
+    # OAuth user token (generado por auth_oauth.py)
+    creds = Credentials.from_authorized_user_file(credentials_path, SCOPES)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    return creds
+
+
 class DriveClient:
     """Wrapper sobre la API de Drive para leer la config y subir el reporte."""
 
     def __init__(self, credentials_path: str, folder_id: str):
         self.folder_id = folder_id
-        creds = service_account.Credentials.from_service_account_file(
-            credentials_path, scopes=SCOPES
-        )
+        creds = _load_credentials(credentials_path)
         self.service = build(
             "drive", "v3", credentials=creds, cache_discovery=False
         )

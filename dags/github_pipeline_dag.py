@@ -27,7 +27,7 @@ EXTRACTOR_IMAGE = "github-extractor:latest"
 def extractor_env():
     return {
         "GITHUB_TOKEN": os.environ.get("GITHUB_TOKEN", ""),
-        "GOOGLE_CREDENTIALS_PATH": "/app/credentials/service_account.json",
+        "GOOGLE_CREDENTIALS_PATH": "/app/credentials/oauth_token.json",
         "GOOGLE_DRIVE_FOLDER_ID": os.environ.get("GOOGLE_DRIVE_FOLDER_ID", ""),
         "DRIVE_CONFIG_FILENAME": os.environ.get("DRIVE_CONFIG_FILENAME", "config.json"),
         "DB_HOST": "postgres-data",
@@ -40,8 +40,11 @@ def extractor_env():
 
 
 def extractor_mounts():
-    """Solo necesitamos credentials/ montado (read-only).
-    El código y el schema.sql ya viven dentro de la imagen.
+    """Volumenes que necesita el contenedor del extractor:
+      - credentials/ : read-only, para autenticarse con Google Drive
+      - reports/     : read-write, donde generate_report deja el CSV
+                       (utilio cuando la subida a Drive falla por cuotas)
+    El codigo y el schema.sql ya viven dentro de la imagen.
     """
     return [
         Mount(
@@ -49,6 +52,12 @@ def extractor_mounts():
             target="/app/credentials",
             type="bind",
             read_only=True,
+        ),
+        Mount(
+            source=f"{HOST_PROJECT_DIR}/reports",
+            target="/app/reports",
+            type="bind",
+            read_only=False,
         ),
     ]
 
