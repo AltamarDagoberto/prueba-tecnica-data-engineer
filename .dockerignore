@@ -1,0 +1,25 @@
+# Control de versiones
+.git
+.gitignore
+
+.env
+.env.local
+credentials/
+
+# Documentación y archivos de proyecto
+*.md
+LICENSE
+
+# Cache y entornos virtuales de Python
+__pycache__
+*.pyc
+.pytest_cache/
+.venv
+venv/
+env/
+
+# Cosas que no necesita el extractor
+dags/
+postgres_data/
+reports/
+*.csv
