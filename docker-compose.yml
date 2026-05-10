@@ -54,7 +54,6 @@ services:
       DB_USER: ${DB_USER:-pipeline}
       DB_PASSWORD: ${DB_PASSWORD:-pipeline_dev_2026}
       DB_NAME: ${DB_NAME:-github_data}
-    user: "0:0"
     entrypoint: /bin/bash
     command:
       - -c
