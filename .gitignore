@@ -216,3 +216,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+
+# === Project-specific ===
+
+# Credenciales
+.env
+.env.local
+credentials/
+*.json
+!config.example.json
+!extractor/package.json
+
+# Airflow runtime
+airflow.db
+airflow_home/
+logs/
+plugins/
+*.pid
+
+# Reports generated locally
+reports/
+*.csv
+
+# Docker volumes
+postgres_data/
